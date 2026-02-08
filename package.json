@@ -1,0 +1,55 @@
+{
+  "name": "@mitrachat/webchat-widget",
+  "version": "1.0.0",
+  "description": "Embeddable WebChat widget for MitraChat",
+  "type": "module",
+  "files": [
+    "dist"
+  ],
+  "main": "./dist/index.umd.js",
+  "module": "./dist/index.es.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.es.js",
+      "require": "./dist/index.umd.js"
+    },
+    "./embed": "./dist/embed.iife.js",
+    "./style.css": "./dist/webchat-widget.css"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build && BUILD_TARGET=embed vite build && tsc --emitDeclarationOnly",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@orpc/client": "^1.13.1"
+  },
+  "devDependencies": {
+    "@sveltejs/vite-plugin-svelte": "^5.0.0",
+    "@tailwindcss/postcss": "^4.0.0",
+    "@tailwindcss/vite": "^4.1.18",
+    "lucide-svelte": "^0.475.0",
+    "postcss": "^8.5.6",
+    "svelte": "^5.0.0",
+    "svelte-check": "^4.0.0",
+    "tailwindcss": "^4.0.0",
+    "typescript": "^5.8.0",
+    "vite": "^6.0.0"
+  },
+  "peerDependencies": {},
+  "keywords": [
+    "webchat",
+    "widget",
+    "chat",
+    "mitrachat",
+    "svelte"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mitrachat/mitrachat-ai-app"
+  }
+}

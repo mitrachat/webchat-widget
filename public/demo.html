@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MitraChat Widget - Local Test</title>
+    <style>
+      body {
+        font-family:
+          system-ui,
+          -apple-system,
+          sans-serif;
+        max-width: 800px;
+        margin: 50px auto;
+        padding: 20px;
+        background: #f5f5f5;
+      }
+      .test-container {
+        background: white;
+        padding: 30px;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      }
+      h1 {
+        color: #333;
+        margin-bottom: 10px;
+      }
+      .config-form {
+        margin: 20px 0;
+        padding: 20px;
+        background: #f9f9f9;
+        border-radius: 6px;
+      }
+      .form-group {
+        margin-bottom: 15px;
+      }
+      label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: 600;
+        color: #555;
+      }
+      input,
+      select {
+        width: 100%;
+        padding: 8px 12px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 14px;
+      }
+      button {
+        background: #3b82f6;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+      }
+      button:hover {
+        background: #2563eb;
+      }
+      .code-block {
+        background: #1e1e1e;
+        color: #d4d4d4;
+        padding: 15px;
+        border-radius: 6px;
+        overflow-x: auto;
+        margin: 15px 0;
+        font-family: "Courier New", monospace;
+        font-size: 13px;
+      }
+      .info {
+        background: #e0f2fe;
+        border-left: 4px solid #3b82f6;
+        padding: 15px;
+        margin: 15px 0;
+        border-radius: 0 4px 4px 0;
+      }
+      .warning {
+        background: #fef3c7;
+        border-left: 4px solid #f59e0b;
+        padding: 15px;
+        margin: 15px 0;
+        border-radius: 0 4px 4px 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="test-container">
+      <h1>MitraChat Widget - Local Test Environment</h1>
+
+      <div class="info">
+        <strong>Instructions:</strong>
+        <ol>
+          <li>
+            Make sure the backend server is running:
+            <code>bun run dev:server</code>
+          </li>
+          <li>Create a webchat provider in the dashboard</li>
+          <li>Copy the provider ID and paste it below</li>
+          <li>Click "Load Widget" to test</li>
+        </ol>
+      </div>
+
+      <div class="config-form">
+        <h3>Widget Configuration</h3>
+
+        <div class="form-group">
+          <label for="providerId">Provider ID (required):</label>
+          <input
+            type="text"
+            id="providerId"
+            placeholder="Enter your webchat provider ID"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="apiUrl">API URL:</label>
+          <input
+            type="text"
+            id="apiUrl"
+            value="http://localhost:3000"
+            placeholder="http://localhost:3000"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="theme">Theme:</label>
+          <select id="theme">
+            <option value="auto">Auto</option>
+            <option value="light">Light</option>
+            <option value="dark">Dark</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="position">Position:</label>
+          <select id="position">
+            <option value="bottom-right">Bottom Right</option>
+            <option value="bottom-left">Bottom Left</option>
+          </select>
+        </div>
+
+        <button onclick="loadWidget()">Load Widget</button>
+        <button
+          onclick="unloadWidget()"
+          style="background: #ef4444; margin-left: 10px"
+        >
+          Unload Widget
+        </button>
+      </div>
+
+      <div class="warning">
+        <strong>Note:</strong> Make sure your provider has the current domain
+        (<code>localhost</code>) in the allowed domains list, or leave it empty
+        to allow all domains.
+      </div>
+
+      <h3>Embed Code Preview</h3>
+      <div class="code-block" id="embedCode">
+        &lt;!-- Add this to your HTML --&gt; &lt;script
+        src="./dist/embed.iife.js"&gt;&lt;/script&gt; &lt;script&gt;
+        window.MitraChatWidget.init({ providerId: 'YOUR_PROVIDER_ID', apiUrl:
+        'http://localhost:3000' }); &lt;/script&gt;
+      </div>
+
+      <h3>Alternative: NPM Import</h3>
+      <div class="code-block">
+        import { mountWebchat } from '@mitrachat/webchat-widget'; mountWebchat({
+        providerId: 'YOUR_PROVIDER_ID', apiUrl: 'http://localhost:3000', theme:
+        'auto', position: 'bottom-right' });
+      </div>
+    </div>
+
+    <!-- Widget container -->
+    <div id="widget-container"></div>
+
+    <!-- Load widget via Vite dev server for live HMR + Tailwind processing -->
+    <script type="module">
+      import { mountWebchat } from "/src/index.ts";
+
+      let widgetInstance = null;
+
+      window.updateEmbedCode = function () {
+        const providerId =
+          document.getElementById("providerId").value || "YOUR_PROVIDER_ID";
+        const apiUrl = document.getElementById("apiUrl").value;
+
+        const code = `&lt;!-- Add this to your HTML --&gt;
+&lt;script src="https://your-cdn.com/webchat-widget.iife.js"&gt;&lt;/script&gt;
+&lt;script&gt;
+  window.MitraChatWidget.init({
+    providerId: '${providerId}',
+    apiUrl: '${apiUrl}'
+  });
+&lt;/script&gt;`;
+
+        document.getElementById("embedCode").innerHTML = code;
+      };
+
+      // Update embed code when inputs change
+      document.querySelectorAll("input, select").forEach((input) => {
+        input.addEventListener("change", window.updateEmbedCode);
+      });
+
+      window.loadWidget = function () {
+        const providerId = document.getElementById("providerId").value;
+        const apiUrl = document.getElementById("apiUrl").value;
+        const theme = document.getElementById("theme").value;
+        const position = document.getElementById("position").value;
+
+        if (!providerId) {
+          alert("Please enter a Provider ID");
+          return;
+        }
+
+        // Unload existing widget
+        if (widgetInstance) {
+          widgetInstance.destroy();
+          widgetInstance = null;
+        }
+
+        widgetInstance = mountWebchat({
+          providerId,
+          apiUrl,
+          theme,
+          position,
+        });
+        console.log("[Test] Widget loaded successfully");
+      };
+
+      window.unloadWidget = function () {
+        if (widgetInstance) {
+          widgetInstance.destroy();
+          widgetInstance = null;
+          console.log("[Test] Widget unloaded");
+        }
+      };
+    </script>
+  </body>
+</html>

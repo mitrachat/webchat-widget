@@ -1,0 +1,64 @@
+@import "tailwindcss";
+
+/* Widget-specific theme using Tailwind v4 @theme directive */
+@theme {
+  --color-mc-primary: #3b82f6;
+  --color-mc-bg: #ffffff;
+  --color-mc-text: #1f2937;
+  --color-mc-border: #e5e7eb;
+  --color-mc-bubble-user: #3b82f6;
+  --color-mc-bubble-agent: #f3f4f6;
+  --font-sans: "Inter", system-ui, sans-serif;
+}
+
+/* Widget container styles */
+.mitrachat-widget {
+  font-family: var(--font-sans);
+  --mc-primary: var(--widget-color, #3b82f6);
+  --mc-bg: var(--widget-bg, #ffffff);
+  --mc-text: var(--widget-text, #1f2937);
+  --mc-border: var(--widget-border, #e5e7eb);
+}
+
+.mitrachat-widget[data-position="bottom-right"] {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 9999;
+}
+
+.mitrachat-widget[data-position="bottom-left"] {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  z-index: 9999;
+}
+
+/* Chat window animations */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.chat-window {
+  animation: slideIn 0.2s ease-out;
+}
+
+.chat-message {
+  animation: fadeIn 0.15s ease-out;
+}
