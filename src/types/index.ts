@@ -9,6 +9,23 @@ export interface WidgetConfig {
   widgetPlaceholderText?: string;
   widgetShowBranding?: boolean;
   allowedDomains?: string[];
+  widgetRequireContactInfo?: boolean;
+  widgetContactFields?: {
+    name: boolean;
+    email: boolean;
+    phone: boolean;
+  };
+  widgetContactRequiredFields?: {
+    name: boolean;
+    email: boolean;
+    phone: boolean;
+  };
+}
+
+export interface ContactInfo {
+  name: string;
+  email: string;
+  phone?: string;
 }
 
 export interface WidgetProps {

@@ -8,10 +8,9 @@
     onClose: () => void;
     onSend: (content: string) => void;
     onResolve: () => void;
-    onTyping?: (isTyping: boolean) => void;
   }
 
-  let { onClose, onSend, onResolve, onTyping }: Props = $props();
+  let { onClose, onSend, onResolve }: Props = $props();
 </script>
 
 <div class="chat-window bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden flex flex-col"
@@ -35,7 +34,6 @@
 
     <ChatInput 
       onSend={onSend}
-      onTyping={onTyping}
       placeholder={$config.widgetPlaceholderText || "Type a message..."}
       disabled={!$connection.isConnected}
     />

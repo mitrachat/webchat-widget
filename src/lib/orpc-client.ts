@@ -13,6 +13,17 @@ interface ConnectOutput {
     widgetSubtitle?: string;
     widgetColor?: string;
     widgetWelcomeMessage?: string;
+    widgetRequireContactInfo?: boolean;
+    widgetContactFields?: {
+      name: boolean;
+      email: boolean;
+      phone: boolean;
+    };
+    widgetContactRequiredFields?: {
+      name: boolean;
+      email: boolean;
+      phone: boolean;
+    };
   };
 }
 
@@ -22,6 +33,11 @@ type WebchatRpcClient = {
       providerId: string;
       sessionId?: string;
       origin?: string;
+      contactInfo?: {
+        name: string;
+        email: string;
+        phone?: string;
+      };
     }) => Promise<ConnectOutput>;
     sendMessage: (input: {
       sessionId: string;
