@@ -1,0 +1,64 @@
+# Contributing to @mitrachat/webchat-widget
+
+Thank you for your interest in contributing! This document provides guidelines for contributing to this project.
+
+## Development Setup
+
+1. Fork and clone the repository:
+```bash
+git clone https://github.com/mitrachat/webchat-widget.git
+cd webchat-widget
+```
+
+2. Install dependencies:
+```bash
+npm install
+```
+
+3. Start the dev server:
+```bash
+npm run dev
+```
+
+## Making Changes
+
+1. Create a new branch for your feature or bug fix:
+```bash
+git checkout -b feature/your-feature-name
+```
+
+2. Make your changes following the existing Svelte 5 and TypeScript patterns
+
+3. Run type checking:
+```bash
+npm run typecheck
+```
+
+4. Build to verify:
+```bash
+npm run build
+```
+
+## Submitting Changes
+
+1. Push your branch to your fork
+2. Create a Pull Request with a clear description of the changes
+3. Reference any related issues
+
+## Commit Message Guidelines
+
+We follow conventional commits:
+- `feat:` New features
+- `fix:` Bug fixes
+- `docs:` Documentation changes
+- `refactor:` Code refactoring
+- `test:` Test additions/changes
+- `chore:` Build/tooling changes
+
+## Code of Conduct
+
+Be respectful and constructive in all interactions.
+
+## Questions?
+
+Open an issue for discussion before making significant changes.
