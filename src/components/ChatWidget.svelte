@@ -182,7 +182,8 @@
     {#if showContactForm}
       <ContactForm 
         config={$config} 
-        onSubmit={handleContactFormSubmit} 
+        onSubmit={handleContactFormSubmit}
+        onClose={() => (isOpen = false)}
       />
     {:else if isConnected}
       <ChatWindow

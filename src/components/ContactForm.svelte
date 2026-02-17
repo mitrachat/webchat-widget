@@ -1,12 +1,14 @@
 <script lang="ts">
+  import { X } from "lucide-svelte";
   import type { WidgetConfig } from '../types';
   
   interface Props {
     config: WidgetConfig;
     onSubmit: (contactInfo: { name: string; email: string; phone?: string }) => void;
+    onClose: () => void;
   }
   
-  let { config, onSubmit }: Props = $props();
+  let { config, onSubmit, onClose }: Props = $props();
   
   let name = $state('');
   let email = $state('');
@@ -69,87 +71,124 @@
   }
 </script>
 
-<div class="contact-form-container">
-  <div class="contact-form-header">
-    <h3>Welcome! 👋</h3>
-    <p>Please provide your information to start chatting</p>
-  </div>
+<div class="chat-window bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden flex flex-col"
+     style="width: 380px; height: 600px;">
   
-  <form onsubmit={handleSubmit} class="contact-form">
-    {#if fields.name}
-      <div class="form-group">
-        <label for="name">
-          Name
-          {#if requiredFields.name}
-            <span class="required">*</span>
-          {/if}
-        </label>
-        <input
-          type="text"
-          id="name"
-          bind:value={name}
-          placeholder="Your name"
-          class:error={errors.name}
-        />
-        {#if errors.name}
-          <span class="error-message">{errors.name}</span>
-        {/if}
+  <!-- Header -->
+  <header class="text-white px-4 py-3 flex items-center gap-3 shrink-0"
+          style="background-color: var(--mc-primary, #3b82f6);">
+    {#if config.widgetLogoUrl}
+      <img src={config.widgetLogoUrl} alt="Logo" class="w-10 h-10 rounded-full object-cover" />
+    {:else}
+      <div class="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+        </svg>
       </div>
     {/if}
-    
-    {#if fields.email}
-      <div class="form-group">
-        <label for="email">
-          Email
-          {#if requiredFields.email}
-            <span class="required">*</span>
-          {/if}
-        </label>
-        <input
-          type="email"
-          id="email"
-          bind:value={email}
-          placeholder="your@email.com"
-          class:error={errors.email}
-        />
-        {#if errors.email}
-          <span class="error-message">{errors.email}</span>
-        {/if}
-      </div>
-    {/if}
-    
-    {#if fields.phone}
-      <div class="form-group">
-        <label for="phone">
-          Phone
-          {#if requiredFields.phone}
-            <span class="required">*</span>
-          {/if}
-        </label>
-        <input
-          type="tel"
-          id="phone"
-          bind:value={phone}
-          placeholder="Your phone number"
-          class:error={errors.phone}
-        />
-        {#if errors.phone}
-          <span class="error-message">{errors.phone}</span>
-        {/if}
-      </div>
-    {/if}
-    
-    <button type="submit" class="submit-btn" disabled={isSubmitting}>
-      {#if isSubmitting}
-        Starting...
-      {:else}
-        Start Chat
+
+    <div class="flex-1 min-w-0">
+      <h3 class="font-semibold text-sm truncate">{config.widgetTitle || "Start a conversation"}</h3>
+      {#if config.widgetSubtitle}
+        <p class="text-xs text-white/80 truncate">{config.widgetSubtitle}</p>
       {/if}
+    </div>
+
+    <button
+      onclick={onClose}
+      class="p-2 hover:bg-white/20 rounded-full transition-colors"
+      aria-label="Close chat"
+    >
+      <X class="w-5 h-5" />
     </button>
-    {#if submitError}
-      <span class="error-message">{submitError}</span>
-    {/if}
-  </form>
+  </header>
+  
+  <!-- Scrollable Content -->
+  <div class="flex-1 overflow-y-auto">
+    <div class="contact-form-container">
+      <div class="contact-form-header">
+        <h3>Welcome! 👋</h3>
+        <p>Please provide your information to start chatting</p>
+      </div>
+      
+      <form onsubmit={handleSubmit} class="contact-form">
+        {#if fields.name}
+          <div class="form-group">
+            <label for="name">
+              Name
+              {#if requiredFields.name}
+                <span class="required">*</span>
+              {/if}
+            </label>
+            <input
+              type="text"
+              id="name"
+              bind:value={name}
+              placeholder="Your name"
+              class:error={errors.name}
+            />
+            {#if errors.name}
+              <span class="error-message">{errors.name}</span>
+            {/if}
+          </div>
+        {/if}
+        
+        {#if fields.email}
+          <div class="form-group">
+            <label for="email">
+              Email
+              {#if requiredFields.email}
+                <span class="required">*</span>
+              {/if}
+            </label>
+            <input
+              type="email"
+              id="email"
+              bind:value={email}
+              placeholder="your@email.com"
+              class:error={errors.email}
+            />
+            {#if errors.email}
+              <span class="error-message">{errors.email}</span>
+            {/if}
+          </div>
+        {/if}
+        
+        {#if fields.phone}
+          <div class="form-group">
+            <label for="phone">
+              Phone
+              {#if requiredFields.phone}
+                <span class="required">*</span>
+              {/if}
+            </label>
+            <input
+              type="tel"
+              id="phone"
+              bind:value={phone}
+              placeholder="Your phone number"
+              class:error={errors.phone}
+            />
+            {#if errors.phone}
+              <span class="error-message">{errors.phone}</span>
+            {/if}
+          </div>
+        {/if}
+        
+        <button type="submit" class="submit-btn" disabled={isSubmitting}>
+          {#if isSubmitting}
+            Starting...
+          {:else}
+            Start Chat
+          {/if}
+        </button>
+        {#if submitError}
+          <span class="error-message">{submitError}</span>
+        {/if}
+      </form>
+    </div>
+  </div>
 </div>
 
 <style>
@@ -158,6 +197,7 @@
     display: flex;
     flex-direction: column;
     gap: 1rem;
+    min-height: 100%;
   }
   
   .contact-form-header {
