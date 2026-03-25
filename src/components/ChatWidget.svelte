@@ -85,12 +85,13 @@
   function handleEvent(event: WebchatEvent) {
     switch (event.type) {
       case "message":
-        if (event.payload.content) {
+        if (event.payload.content || event.payload.attachments?.length) {
           const message: Message = {
             id: event.payload.id || Date.now().toString(),
-            content: event.payload.content,
+            content: event.payload.content || "",
             sender: event.payload.sender || "agent",
             timestamp: event.payload.timestamp,
+            attachments: event.payload.attachments,
           };
           messages.add(message);
           if (!isOpen) {

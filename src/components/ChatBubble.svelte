@@ -51,9 +51,35 @@
       : 'bg-gray-200 text-gray-800 rounded-bl-md'}"
     style={message.sender === 'user' ? 'background-color: var(--mc-primary, #3b82f6);' : ''}
   >
-    {#if message.sender === 'user'}
+    {#if message.attachments?.length}
+      <div class="mb-2 space-y-2">
+        {#each message.attachments as attachment (attachment.id)}
+          {#if attachment.type === "image"}
+            <a href={attachment.url} target="_blank" rel="noopener noreferrer">
+              <img
+                src={attachment.url}
+                alt={attachment.name}
+                class="max-w-full max-h-48 rounded-lg border border-black/10"
+              />
+            </a>
+          {:else}
+            <a
+              href={attachment.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="flex items-center gap-2 rounded-lg border border-black/10 bg-white/70 px-3 py-2 text-sm"
+            >
+              <span>File</span>
+              <span class="truncate">{attachment.name}</span>
+            </a>
+          {/if}
+        {/each}
+      </div>
+    {/if}
+
+    {#if message.sender === 'user' && message.content}
       <p class="text-sm whitespace-pre-wrap">{message.content}</p>
-    {:else}
+    {:else if message.content}
       <div class="text-sm mc-markdown">{@html renderMarkdown(message.content)}</div>
     {/if}
     

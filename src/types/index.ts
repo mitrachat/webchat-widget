@@ -62,6 +62,7 @@ export interface WebchatEvent {
     id?: string;
     content?: string;
     sender?: "agent" | "system";
+    attachments?: Attachment[];
     isTyping?: boolean;
     timestamp: string;
   };
