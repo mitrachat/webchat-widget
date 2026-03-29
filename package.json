@@ -25,7 +25,8 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@orpc/client": "^1.13.1"
+    "@orpc/client": "^1.13.1",
+    "marked": "^17.0.5"
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^5.0.0",
@@ -39,7 +40,6 @@
     "typescript": "^5.8.0",
     "vite": "^6.0.0"
   },
-  "peerDependencies": {},
   "keywords": [
     "webchat",
     "widget",
