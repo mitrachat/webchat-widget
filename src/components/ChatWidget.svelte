@@ -92,6 +92,8 @@
             sender: event.payload.sender || "agent",
             timestamp: event.payload.timestamp,
             attachments: event.payload.attachments,
+            reply: event.payload.reply,
+            format: event.payload.format,
           };
           messages.add(message);
           if (!isOpen) {
@@ -128,7 +130,7 @@
 
     // Add user message immediately
     const userMessage: Message = {
-      id: Date.now().toString(),
+      id: crypto.randomUUID(),
       content,
       sender: "user",
       timestamp: new Date().toISOString(),
@@ -141,6 +143,7 @@
         sessionId,
         providerId,
         content,
+        clientMessageId: userMessage.id,
       });
     } catch (error) {
       console.error("[WebChat] Failed to send message:", error);

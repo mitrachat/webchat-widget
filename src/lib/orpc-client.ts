@@ -43,6 +43,7 @@ type WebchatRpcClient = {
       sessionId: string;
       providerId: string;
       content: string;
+      clientMessageId?: string;
     }) => Promise<{ success: boolean }>;
     subscribe: (
       input: { sessionId: string; providerId: string },

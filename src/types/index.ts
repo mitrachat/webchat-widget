@@ -41,6 +41,8 @@ export interface Message {
   sender: "user" | "agent" | "system";
   timestamp: string;
   attachments?: Attachment[];
+  reply?: ReplyPreview;
+  format?: "plain" | "html";
 }
 
 export interface Attachment {
@@ -49,6 +51,13 @@ export interface Attachment {
   url: string;
   name: string;
   size?: number;
+}
+
+export interface ReplyPreview {
+  sender: "user" | "agent" | "system";
+  senderLabel: string;
+  content?: string;
+  attachmentLabel?: string;
 }
 
 export interface Session {
@@ -61,8 +70,10 @@ export interface WebchatEvent {
   payload: {
     id?: string;
     content?: string;
+    format?: "plain" | "html";
     sender?: "agent" | "system";
     attachments?: Attachment[];
+    reply?: ReplyPreview;
     isTyping?: boolean;
     timestamp: string;
   };

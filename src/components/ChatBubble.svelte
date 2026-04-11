@@ -43,6 +43,17 @@
       : 'bg-gray-200 text-gray-800 rounded-bl-md'}"
     style={message.sender === 'user' ? 'background-color: var(--mc-primary, #3b82f6);' : ''}
   >
+    {#if message.reply}
+      <div class="mb-2 rounded-lg border border-black/10 bg-black/5 px-3 py-2 text-xs">
+        <div class="font-semibold opacity-80">{message.reply.senderLabel}</div>
+        {#if message.reply.content}
+          <div class="mt-0.5 line-clamp-2 opacity-80">{message.reply.content}</div>
+        {:else if message.reply.attachmentLabel}
+          <div class="mt-0.5 opacity-80">{message.reply.attachmentLabel}</div>
+        {/if}
+      </div>
+    {/if}
+
     {#if message.attachments?.length}
       <div class="mb-2 space-y-2">
         {#each message.attachments as attachment (attachment.id)}
