@@ -3,6 +3,13 @@
   import TypingIndicator from "./TypingIndicator.svelte";
   import { messages, config } from "../stores/messages";
   import { onMount } from "svelte";
+  import type { Message } from "../types";
+
+  interface Props {
+    onReply?: (message: Message) => void;
+  }
+
+  let { onReply }: Props = $props();
 
   let messagesContainer: HTMLDivElement;
 
@@ -38,7 +45,7 @@
       {#if message.id === "typing"}
         <TypingIndicator />
       {:else}
-        <ChatBubble {message} />
+        <ChatBubble {message} {onReply} />
       {/if}
     {/each}
   {/if}

@@ -4,9 +4,10 @@
 
   interface Props {
     message: Message;
+    onReply?: (message: Message) => void;
   }
 
-  let { message }: Props = $props();
+  let { message, onReply }: Props = $props();
 
   function formatTime(timestamp: string): string {
     const date = new Date(timestamp);
@@ -43,6 +44,16 @@
       : 'bg-gray-200 text-gray-800 rounded-bl-md'}"
     style={message.sender === 'user' ? 'background-color: var(--mc-primary, #3b82f6);' : ''}
   >
+    {#if onReply && message.sender !== "system"}
+      <button
+        type="button"
+        class="mb-2 text-[11px] font-medium opacity-70 hover:opacity-100"
+        onclick={() => onReply?.(message)}
+      >
+        Reply
+      </button>
+    {/if}
+
     {#if message.reply}
       <div class="mb-2 rounded-lg border border-black/10 bg-black/5 px-3 py-2 text-xs">
         <div class="font-semibold opacity-80">{message.reply.senderLabel}</div>
@@ -88,6 +99,9 @@
 
     <span class="text-xs opacity-70 mt-1 block {message.sender === 'user' ? 'text-right' : ''}">
       {formatTime(message.timestamp)}
+      {#if message.sender === 'user' && message.status}
+        · {message.status}
+      {/if}
     </span>
   </div>
 </div>

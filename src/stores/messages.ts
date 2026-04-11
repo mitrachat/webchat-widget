@@ -7,6 +7,25 @@ function createMessagesStore() {
   return {
     subscribe,
     add: (message: Message) => update((messages) => [...messages, message]),
+    updateStatus: (
+      targetId: string,
+      status: NonNullable<Message["status"]>,
+    ) =>
+      update((messages) =>
+        messages.map((message) =>
+          message.id === targetId ? { ...message, status } : message,
+        ),
+      ),
+    markOutgoingRead: () =>
+      update((messages) =>
+        messages.map((message) =>
+          message.sender === "user" &&
+          message.id !== "typing" &&
+          message.status !== "failed"
+            ? { ...message, status: "read" }
+            : message,
+        ),
+      ),
     updateTyping: (isTyping: boolean) =>
       update((messages) => {
         const filtered = messages.filter((m) => m.id !== "typing");

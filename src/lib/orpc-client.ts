@@ -42,8 +42,22 @@ type WebchatRpcClient = {
     sendMessage: (input: {
       sessionId: string;
       providerId: string;
-      content: string;
+      content?: string;
       clientMessageId?: string;
+      replyToMessageId?: string;
+      replyPreview?: {
+        sender: "user" | "agent" | "system";
+        senderLabel: string;
+        content?: string;
+        attachmentLabel?: string;
+      };
+      attachments?: Array<{
+        type: "image" | "file";
+        name: string;
+        mimeType: string;
+        size: number;
+        dataUrl: string;
+      }>;
     }) => Promise<{ success: boolean }>;
     subscribe: (
       input: { sessionId: string; providerId: string },

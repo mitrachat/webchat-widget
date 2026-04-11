@@ -6,11 +6,27 @@
 
   interface Props {
     onClose: () => void;
-    onSend: (content: string) => void;
+    onSend: (payload: {
+      content?: string;
+      attachments?: Array<{
+        type: "image" | "file";
+        name: string;
+        mimeType: string;
+        size: number;
+        dataUrl: string;
+      }>;
+    }) => void;
     onResolve: () => void;
+    onReply: (message: import("../types").Message) => void;
+    reply: {
+      senderLabel: string;
+      content?: string;
+      attachmentLabel?: string;
+    } | null;
+    onCancelReply: () => void;
   }
 
-  let { onClose, onSend, onResolve }: Props = $props();
+  let { onClose, onSend, onResolve, onReply, reply, onCancelReply }: Props = $props();
 </script>
 
 <div class="chat-window bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden flex flex-col"
@@ -24,7 +40,7 @@
   />
 
   <div class="flex-1 flex flex-col min-h-0">
-    <ChatMessages />
+    <ChatMessages {onReply} />
     
     {#if $connection.error}
       <div class="px-4 py-2 bg-red-50 text-red-600 text-sm text-center">
@@ -36,6 +52,8 @@
       onSend={onSend}
       placeholder={$config.widgetPlaceholderText || "Type a message..."}
       disabled={!$connection.isConnected}
+      {reply}
+      onCancelReply={onCancelReply}
     />
   </div>
 </div>

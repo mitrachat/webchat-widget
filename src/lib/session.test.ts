@@ -70,7 +70,10 @@ describe("contact info", () => {
   });
 
   test("clear removes contact info", () => {
-    storeContactInfo("provider-1", { name: "John" });
+    storeContactInfo("provider-1", {
+      name: "John",
+      email: "john@test.com",
+    });
     clearContactInfo("provider-1");
     expect(getStoredContactInfo("provider-1")).toBeNull();
   });

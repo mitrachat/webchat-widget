@@ -7,7 +7,7 @@
   import { SubscriptionManager } from "../lib/subscription";
   import { getStoredSession, storeSession, clearSession, generateSessionId, getStoredContactInfo, storeContactInfo } from "../lib/session";
   import { messages, config, connection, unreadCount } from "../stores/messages";
-  import type { WidgetProps, WebchatEvent, Message, ContactInfo } from "../types";
+  import type { WidgetProps, WebchatEvent, Message, ContactInfo, ReplyPreview } from "../types";
 
   let { providerId, apiUrl, theme = "auto", position = "bottom-right" }: WidgetProps = $props();
 
@@ -18,6 +18,7 @@
   let isConnected = $state(false);
   let showContactForm = $state(false);
   let contactInfo = $state<ContactInfo | undefined>(undefined);
+  let replyTarget = $state<Message | null>(null);
 
   onMount(async () => {
     // Check for stored contact info
@@ -96,9 +97,17 @@
             format: event.payload.format,
           };
           messages.add(message);
+          if (isOpen && message.sender !== "user") {
+            messages.markOutgoingRead();
+          }
           if (!isOpen) {
             unreadCount.increment();
           }
+        }
+        break;
+      case "message.updated":
+        if (event.payload.clientMessageId && event.payload.status) {
+          messages.updateStatus(event.payload.clientMessageId, event.payload.status);
         }
         break;
       case "typing":
@@ -125,15 +134,50 @@
     await connectToWebchat(submittedContactInfo);
   }
 
-  async function handleSend(content: string) {
+  function buildReplyPreview(message: Message): ReplyPreview {
+    return {
+      sender: message.sender,
+      senderLabel:
+        message.sender === "user"
+          ? "You"
+          : message.sender === "agent"
+            ? "Agent"
+            : "System",
+      content: message.content || undefined,
+      attachmentLabel:
+        !message.content && message.attachments?.length
+          ? message.attachments[0]?.name
+          : undefined,
+    };
+  }
+
+  async function handleSend(payload: {
+    content?: string;
+    attachments?: Array<{
+      type: "image" | "file";
+      name: string;
+      mimeType: string;
+      size: number;
+      dataUrl: string;
+    }>;
+  }) {
     if (!sessionId) return;
 
     // Add user message immediately
     const userMessage: Message = {
       id: crypto.randomUUID(),
-      content,
+      content: payload.content || "",
       sender: "user",
       timestamp: new Date().toISOString(),
+      attachments: payload.attachments?.map((attachment, index) => ({
+        id: `local-${index}-${Date.now()}`,
+        type: attachment.type,
+        url: attachment.dataUrl,
+        name: attachment.name,
+        size: attachment.size,
+      })),
+      reply: replyTarget ? buildReplyPreview(replyTarget) : undefined,
+      status: "pending",
     };
     messages.add(userMessage);
 
@@ -142,12 +186,18 @@
       await client.sendMessage({
         sessionId,
         providerId,
-        content,
+        content: payload.content,
         clientMessageId: userMessage.id,
+        replyToMessageId: replyTarget?.id,
+        replyPreview: replyTarget ? buildReplyPreview(replyTarget) : undefined,
+        attachments: payload.attachments,
       });
     } catch (error) {
       console.error("[WebChat] Failed to send message:", error);
+      messages.updateStatus(userMessage.id, "failed");
     }
+
+    replyTarget = null;
   }
 
   async function handleResolve() {
@@ -170,6 +220,7 @@
     sessionId = "";
     isOpen = false;
     isConnected = false;
+    replyTarget = null;
     connection.setDisconnected();
   }
 
@@ -194,6 +245,13 @@
         onClose={() => (isOpen = false)}
         onSend={handleSend}
         onResolve={handleResolve}
+        onReply={(message) => (replyTarget = message)}
+        reply={replyTarget ? {
+          senderLabel: buildReplyPreview(replyTarget).senderLabel,
+          content: buildReplyPreview(replyTarget).content,
+          attachmentLabel: buildReplyPreview(replyTarget).attachmentLabel,
+        } : null}
+        onCancelReply={() => (replyTarget = null)}
       />
     {/if}
   {:else}

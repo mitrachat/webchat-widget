@@ -1,5 +1,5 @@
-import { test, expect, afterEach } from "vitest";
-import { render, screen, cleanup } from "@testing-library/svelte";
+import { test, expect, afterEach, vi } from "vitest";
+import { render, screen, cleanup, fireEvent } from "@testing-library/svelte";
 import ChatBubble from "../components/ChatBubble.svelte";
 
 afterEach(() => cleanup());
@@ -14,7 +14,7 @@ test("renders user message content", () => {
     },
   });
 
-  expect(screen.getByText("Hello world")).toBeInTheDocument();
+  expect(screen.getByText("Hello world")).toBeTruthy();
 });
 
 test("renders agent message with markdown content", () => {
@@ -28,7 +28,7 @@ test("renders agent message with markdown content", () => {
   });
 
   const bold = screen.getByText("bold text");
-  expect(bold).toBeInTheDocument();
+  expect(bold).toBeTruthy();
   expect(bold.tagName).toBe("STRONG");
 });
 
@@ -43,7 +43,7 @@ test("renders timestamp", () => {
   });
 
   const timeEl = screen.getByText(/\d{1,2}:\d{2}/);
-  expect(timeEl).toBeInTheDocument();
+  expect(timeEl).toBeTruthy();
 });
 
 test("renders file attachment", () => {
@@ -64,5 +64,54 @@ test("renders file attachment", () => {
     },
   });
 
-  expect(screen.getByText("document.pdf")).toBeInTheDocument();
+  expect(screen.getByText("document.pdf")).toBeTruthy();
+});
+
+test("renders reply preview content", () => {
+  render(ChatBubble, {
+    message: {
+      id: "5",
+      content: "Reply body",
+      sender: "user",
+      timestamp: "2026-04-10T10:00:00Z",
+      reply: {
+        sender: "agent",
+        senderLabel: "Admin",
+        content: "Original message",
+      },
+    },
+  });
+
+  expect(screen.getByText("Admin")).toBeTruthy();
+  expect(screen.getByText("Original message")).toBeTruthy();
+});
+
+test("renders outgoing status text", () => {
+  render(ChatBubble, {
+    message: {
+      id: "6",
+      content: "Pending message",
+      sender: "user",
+      timestamp: "2026-04-10T10:00:00Z",
+      status: "pending",
+    },
+  });
+
+  expect(screen.getByText(/· pending/i)).toBeTruthy();
+});
+
+test("invokes reply action when provided", async () => {
+  const handled = vi.fn();
+  render(ChatBubble, {
+    message: {
+      id: "7",
+      content: "Can you reply?",
+      sender: "agent",
+      timestamp: "2026-04-10T10:00:00Z",
+    },
+    onReply: handled,
+  });
+
+  await fireEvent.click(screen.getByRole("button", { name: /reply/i }));
+  expect(handled).toHaveBeenCalledTimes(1);
 });

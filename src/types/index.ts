@@ -43,6 +43,7 @@ export interface Message {
   attachments?: Attachment[];
   reply?: ReplyPreview;
   format?: "plain" | "html";
+  status?: "pending" | "sent" | "delivered" | "read" | "failed";
 }
 
 export interface Attachment {
@@ -66,14 +67,16 @@ export interface Session {
 }
 
 export interface WebchatEvent {
-  type: "message" | "typing" | "error" | "system";
+  type: "message" | "message.updated" | "typing" | "error" | "system";
   payload: {
     id?: string;
+    clientMessageId?: string;
     content?: string;
     format?: "plain" | "html";
     sender?: "agent" | "system";
     attachments?: Attachment[];
     reply?: ReplyPreview;
+    status?: "pending" | "sent" | "delivered" | "read" | "failed";
     isTyping?: boolean;
     timestamp: string;
   };
