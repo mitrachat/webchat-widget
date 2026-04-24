@@ -9,9 +9,6 @@ export default defineConfig({
     exclude: ["**/node_modules/**", "**/dist/**"],
     setupFiles: ["./src/test-setup.ts"],
     clearMocks: true,
-    browser: {
-      enabled: false,
-    },
     resolve: {
       conditions: ["browser"],
     },
