@@ -67,7 +67,14 @@ export interface Session {
 }
 
 export interface WebchatEvent {
-  type: "message" | "message.updated" | "typing" | "error" | "system";
+  type:
+    | "message"
+    | "message.updated"
+    | "typing"
+    | "error"
+    | "system"
+    /** webchat-p2-config-live-propagation: server signals config has changed; widget should re-fetch */
+    | "config.updated";
   payload: {
     id?: string;
     clientMessageId?: string;
@@ -79,6 +86,10 @@ export interface WebchatEvent {
     status?: "pending" | "sent" | "delivered" | "read" | "failed";
     isTyping?: boolean;
     timestamp: string;
+    /** config.updated only — server-side version counter, can be used to dedupe */
+    version?: number;
+    /** config.updated only — the provider whose config changed */
+    providerId?: string;
   };
 }
 

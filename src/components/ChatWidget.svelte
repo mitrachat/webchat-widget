@@ -128,6 +128,32 @@
         }
         // Ignore heartbeat events — they are only for keeping the SSE connection alive
         break;
+      case "config.updated":
+        // Provider config changed in the dashboard. Re-fetch via connect
+        // with the current sessionId so we apply the new values without
+        // forcing the visitor to reload the host page.
+        // Fire-and-forget; if it fails the widget keeps the prior config.
+        void refreshConfig();
+        break;
+    }
+  }
+
+  async function refreshConfig() {
+    try {
+      const result = await client.connect({
+        providerId,
+        sessionId,
+        origin: window.location.origin,
+        did: honeypot,
+      });
+      if (result.config) {
+        config.set(result.config);
+        if (result.config.widgetColor) {
+          config.updateColor(result.config.widgetColor);
+        }
+      }
+    } catch (error) {
+      console.warn("[WebChat] Failed to refresh config:", error);
     }
   }
 
