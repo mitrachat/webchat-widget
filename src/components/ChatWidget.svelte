@@ -19,6 +19,10 @@
   let showContactForm = $state(false);
   let contactInfo = $state<ContactInfo | undefined>(undefined);
   let replyTarget = $state<Message | null>(null);
+  // Anti-bot honeypot: hidden field that humans never see/touch but
+  // headless form-filling bots tend to populate. Server rejects connects
+  // where this is non-empty.
+  let honeypot = $state("");
 
   onMount(async () => {
     // Check for stored contact info
@@ -45,6 +49,7 @@
         sessionId,
         origin: window.location.origin,
         contactInfo: contactInfoToUse,
+        did: honeypot,
       });
 
       // Persist session only after successful connect
@@ -233,6 +238,21 @@
 </script>
 
 <div class="mitrachat-widget" data-position={position}>
+  <!--
+    Anti-bot honeypot: invisible to humans (off-screen, aria-hidden,
+    tab-index=-1, no autocomplete). Headless form-filling bots that
+    blindly populate inputs will set this; server rejects non-empty.
+  -->
+  <label class="mitrachat-honeypot" aria-hidden="true">
+    Do not fill this field
+    <input
+      type="text"
+      name="did"
+      tabindex={-1}
+      autocomplete="off"
+      bind:value={honeypot}
+    />
+  </label>
   {#if isOpen}
     {#if showContactForm}
       <ContactForm 
@@ -273,5 +293,16 @@
   .mitrachat-widget[data-position="bottom-left"] {
     bottom: 1rem;
     left: 1rem;
+  }
+
+  .mitrachat-honeypot {
+    position: absolute;
+    left: -9999px;
+    top: -9999px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    opacity: 0;
+    pointer-events: none;
   }
 </style>

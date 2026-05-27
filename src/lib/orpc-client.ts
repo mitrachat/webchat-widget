@@ -38,6 +38,8 @@ type WebchatRpcClient = {
         email: string;
         phone?: string;
       };
+      /** Anti-bot honeypot — must be empty for human clients. */
+      did?: string;
     }) => Promise<ConnectOutput>;
     sendMessage: (input: {
       sessionId: string;
