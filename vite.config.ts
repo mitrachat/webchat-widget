@@ -8,45 +8,44 @@ import { resolve } from "path";
 const isEmbedBuild = process.env.BUILD_TARGET === "embed";
 
 export default defineConfig({
-  plugins: [
-    svelte(),
-    // Generate .d.ts declaration files for library consumers
-    dts({
-      insertTypesEntry: true,
-      include: ["src/**/*"],
-      exclude: ["src/**/*.test.ts", "src/**/*.spec.ts"],
-    }),
-  ],
-  build: {
-    sourcemap: true,
-    lib: isEmbedBuild
-      ? {
-          entry: resolve(__dirname, "src/embed.ts"),
-          name: "MitraChatWidget",
-          formats: ["iife"],
-          fileName: () => "embed.iife.js",
-        }
-      : {
-          entry: resolve(__dirname, "src/index.ts"),
-          name: "MitraChatWidget",
-          formats: ["es", "umd"],
-          fileName: (format) => `index.${format}.js`,
-        },
-    rollupOptions: {
-      external: [],
-      output: {
-        globals: {},
-      },
-    },
-    cssCodeSplit: false,
-    // Embed build writes to same dist dir without cleaning it
-    emptyOutDir: !isEmbedBuild,
-  },
-  server: {
-    port: 5174,
-    open: "/demo.html",
-  },
-  preview: {
-    port: 4174,
-  },
+	plugins: [
+		svelte(),
+		dts({
+			insertTypesEntry: true,
+			include: ["src/**/*"],
+			exclude: ["src/**/*.test.ts", "src/**/*.spec.ts"],
+		}),
+	],
+	build: {
+		sourcemap: true,
+		lib: isEmbedBuild
+			? {
+					entry: resolve(__dirname, "src/embed.ts"),
+					name: "MitraChatWidget",
+					formats: ["iife"],
+					fileName: () => "embed.iife.js",
+				}
+			: {
+					entry: resolve(__dirname, "src/index.ts"),
+					name: "MitraChatWidget",
+					formats: ["es", "umd"],
+					fileName: (format) => `index.${format}.js`,
+				},
+		rollupOptions: {
+			external: [],
+			output: {
+				globals: {},
+			},
+		},
+		cssCodeSplit: false,
+		// Embed build writes to same dist dir without cleaning it
+		emptyOutDir: !isEmbedBuild,
+	},
+	server: {
+		port: 5174,
+		open: "/demo.html",
+	},
+	preview: {
+		port: 4174,
+	},
 });
