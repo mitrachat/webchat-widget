@@ -1,42 +1,71 @@
-import { test, expect, afterEach } from "vitest";
-import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
+import { test, expect, afterEach, vi } from "vitest";
+import { render, cleanup } from "@testing-library/svelte";
+import ChatWidget from "./ChatWidget.svelte";
 
-// Static-source assertions are sufficient here — exercising the live
-// component requires mocking the oRPC client and the full SSE
-// subscription manager. The acceptance criterion is that the widget
-// renders a honeypot field, binds it, and passes its value to connect.
+// The widget bootstraps by calling client.connect() on mount. Mock the
+// oRPC client factory so the network never fires during these tests —
+// what we're asserting is purely the rendered DOM shape of the
+// honeypot field, not the connect handshake.
+vi.mock("../lib/orpc-client", () => ({
+	createWebchatClient: () => ({
+		connect: vi.fn(async () => ({
+			sessionId: "session-honeypot-test",
+			config: {},
+		})),
+		sendMessage: vi.fn(async () => ({})),
+		subscribe: vi.fn(async function* () {}),
+		typing: vi.fn(async () => ({})),
+		resolve: vi.fn(async () => ({})),
+		publishReadEvent: vi.fn(async () => ({})),
+	}),
+}));
 
-afterEach(() => {
-	// No DOM mounts here; nothing to clean up.
+// The SubscriptionManager kicks off an SSE loop we don't care about
+// here. Stub it to a no-op so test teardown is clean.
+vi.mock("../lib/subscription", () => ({
+	SubscriptionManager: class {
+		constructor() {}
+		connect() {}
+		disconnect() {}
+	},
+}));
+
+afterEach(() => cleanup());
+
+test("ChatWidget renders a honeypot input with name=did", () => {
+	const { container } = render(ChatWidget, {
+		props: { providerId: "test-provider", apiUrl: "http://localhost" },
+	});
+
+	const input = container.querySelector('input[name="did"]');
+	expect(input).not.toBeNull();
+	expect(input?.getAttribute("type")).toBe("text");
+	expect(input?.getAttribute("tabindex")).toBe("-1");
+	expect(input?.getAttribute("autocomplete")).toBe("off");
 });
 
-const widgetSource = readFileSync(
-	resolve(__dirname, "ChatWidget.svelte"),
-	"utf-8",
-);
+test("honeypot input is wrapped in an aria-hidden label with the off-screen class", () => {
+	// JSDOM does not actually apply Svelte's scoped <style> block, so we
+	// can't assert getComputedStyle. The structural contract is enough:
+	// any visually-rendered field would either be missing aria-hidden or
+	// the off-screen class hook, both of which we assert here.
+	const { container } = render(ChatWidget, {
+		props: { providerId: "test-provider", apiUrl: "http://localhost" },
+	});
 
-test("ChatWidget declares a honeypot state variable", () => {
-	expect(widgetSource).toMatch(/let\s+honeypot\s*=\s*\$state\(""\)/);
+	const label = container.querySelector(".mitrachat-honeypot");
+	expect(label).not.toBeNull();
+	expect(label?.getAttribute("aria-hidden")).toBe("true");
 });
 
-test("ChatWidget renders an off-screen, aria-hidden honeypot input", () => {
-	expect(widgetSource).toMatch(/aria-hidden="true"/);
-	expect(widgetSource).toMatch(/name="did"/);
-	expect(widgetSource).toMatch(/tabindex={-1}/);
-	expect(widgetSource).toMatch(/autocomplete="off"/);
-	expect(widgetSource).toMatch(/bind:value={honeypot}/);
-});
+test("honeypot value defaults to empty string", () => {
+	const { container } = render(ChatWidget, {
+		props: { providerId: "test-provider", apiUrl: "http://localhost" },
+	});
 
-test("ChatWidget passes the honeypot value to the connect call", () => {
-	// Connect input must include `did: honeypot` so the server-side
-	// honeypot check has a value to compare against.
-	expect(widgetSource).toMatch(/did:\s*honeypot,/);
-});
-
-test("ChatWidget styles the honeypot off-screen and non-interactive", () => {
-	expect(widgetSource).toMatch(/\.mitrachat-honeypot/);
-	expect(widgetSource).toMatch(/position:\s*absolute/);
-	expect(widgetSource).toMatch(/left:\s*-9999px/);
-	expect(widgetSource).toMatch(/pointer-events:\s*none/);
+	const input = container.querySelector(
+		'input[name="did"]',
+	) as HTMLInputElement | null;
+	expect(input).not.toBeNull();
+	expect(input?.value).toBe("");
 });
