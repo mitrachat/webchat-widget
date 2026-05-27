@@ -1,5 +1,6 @@
 import { defineConfig } from "vite";
 import { svelte } from "@sveltejs/vite-plugin-svelte";
+import dts from "vite-plugin-dts";
 import { resolve } from "path";
 
 // Detect which build target via env: "embed" builds the IIFE embed script,
@@ -7,8 +8,17 @@ import { resolve } from "path";
 const isEmbedBuild = process.env.BUILD_TARGET === "embed";
 
 export default defineConfig({
-  plugins: [svelte()],
+  plugins: [
+    svelte(),
+    // Generate .d.ts declaration files for library consumers
+    dts({
+      insertTypesEntry: true,
+      include: ["src/**/*"],
+      exclude: ["src/**/*.test.ts", "src/**/*.spec.ts"],
+    }),
+  ],
   build: {
+    sourcemap: true,
     lib: isEmbedBuild
       ? {
           entry: resolve(__dirname, "src/embed.ts"),

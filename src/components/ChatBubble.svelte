@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { Message } from "../types";
   import { marked } from 'marked';
+  import DOMPurify from 'dompurify';
 
   interface Props {
     message: Message;
@@ -15,23 +16,29 @@
   }
 
   /**
-   * Render markdown or HTML content based on message format
-   * For HTML format: render directly (from server)
-   * For plain format: convert markdown to HTML using marked
+   * Render markdown or HTML content based on message format.
+   * All HTML is sanitized via DOMPurify before insertion into the DOM.
    */
   function renderContent(text: string, format?: "plain" | "html"): string {
     if (!text) return "";
-    
-    // If format is HTML, render directly (already sanitized on server)
+
+    let rawHtml: string;
     if (format === "html") {
-      return text;
+      rawHtml = text;
+    } else {
+      rawHtml = marked(text, { breaks: true, gfm: true }) as string;
     }
-    
-    // Otherwise, convert markdown to HTML using marked
-    return marked(text, {
-      breaks: true,
-      gfm: true,
-    }) as string;
+
+    return DOMPurify.sanitize(rawHtml, {
+      ALLOWED_TAGS: [
+        "p", "br", "strong", "b", "em", "i", "s", "strike", "del",
+        "code", "pre", "a", "ul", "ol", "li", "blockquote", "h1",
+        "h2", "h3", "h4", "h5", "h6", "img", "span", "div",
+      ],
+      ALLOWED_ATTR: [
+        "href", "title", "target", "rel", "src", "alt", "class",
+      ],
+    });
   }
 </script>
 

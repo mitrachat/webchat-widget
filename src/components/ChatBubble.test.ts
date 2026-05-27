@@ -115,3 +115,19 @@ test("invokes reply action when provided", async () => {
   await fireEvent.click(screen.getByRole("button", { name: /reply/i }));
   expect(handled).toHaveBeenCalledTimes(1);
 });
+
+test("sanitizes malicious HTML in agent messages", () => {
+  render(ChatBubble, {
+    message: {
+      id: "8",
+      content: "<img src=x onerror=alert('xss')>",
+      sender: "agent",
+      timestamp: "2026-04-10T10:00:00Z",
+      format: "html",
+    },
+  });
+
+  const html = document.body.innerHTML;
+  expect(html).not.toContain("onerror");
+  expect(html).not.toContain("alert");
+});
