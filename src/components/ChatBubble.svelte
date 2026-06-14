@@ -22,6 +22,14 @@
   function renderContent(text: string, format?: "plain" | "html"): string {
     if (!text) return "";
 
+    // Force rel="noopener noreferrer" on any link opened in a new tab to
+    // prevent reverse tabnabbing from agent-generated or user-shared links.
+    DOMPurify.addHook("afterSanitizeAttributes", (node) => {
+      if (node.tagName === "A" && node.getAttribute("target") === "_blank") {
+        node.setAttribute("rel", "noopener noreferrer");
+      }
+    });
+
     let rawHtml: string;
     if (format === "html") {
       rawHtml = text;
@@ -29,7 +37,7 @@
       rawHtml = marked(text, { breaks: true, gfm: true }) as string;
     }
 
-    return DOMPurify.sanitize(rawHtml, {
+    const sanitized = DOMPurify.sanitize(rawHtml, {
       ALLOWED_TAGS: [
         "p", "br", "strong", "b", "em", "i", "s", "strike", "del",
         "code", "pre", "a", "ul", "ol", "li", "blockquote", "h1",
@@ -39,6 +47,12 @@
         "href", "title", "target", "rel", "src", "alt", "class",
       ],
     });
+
+    // Hooks persist on the shared DOMPurify instance; remove this one so
+    // subsequent sanitization rounds do not stack duplicate hooks.
+    DOMPurify.removeHook("afterSanitizeAttributes");
+
+    return sanitized;
   }
 </script>
 

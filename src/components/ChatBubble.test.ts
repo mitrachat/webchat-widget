@@ -130,3 +130,19 @@ test("sanitizes malicious HTML in agent messages", () => {
 	expect(container.innerHTML).not.toContain("onerror");
 	expect(container.innerHTML).not.toContain("alert");
 });
+
+test("forces rel=noopener noreferrer on target=_blank links", () => {
+	const { container } = render(ChatBubble, {
+		message: {
+			id: "9",
+			content: '<a href="https://evil" target="_blank">click me</a>',
+			sender: "agent",
+			timestamp: "2026-04-10T10:00:00Z",
+			format: "html",
+		},
+	});
+
+	const link = container.querySelector("a[target='_blank']");
+	expect(link).toBeTruthy();
+	expect(link?.getAttribute("rel")).toBe("noopener noreferrer");
+});
