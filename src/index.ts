@@ -21,8 +21,8 @@ export function mountWebchat(props: WidgetProps & { container?: HTMLElement }) {
   };
 }
 
-// Auto-initialize if data attributes are present
-document.addEventListener("DOMContentLoaded", () => {
+// Auto-initialize if data attributes are present.
+function autoInitWebchat() {
   const elements = document.querySelectorAll("[data-mitrachat-provider]");
   elements.forEach((el) => {
     const providerId = el.getAttribute("data-mitrachat-provider");
@@ -42,4 +42,15 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     }
   });
-});
+}
+
+// bag.7 #6 — run immediately when the DOM is already parsed (the bundle may be
+// loaded async/defer or injected after DOMContentLoaded already fired, in which
+// case the event listener would never run); otherwise wait for the event.
+if (typeof document !== "undefined") {
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", autoInitWebchat);
+  } else {
+    autoInitWebchat();
+  }
+}
