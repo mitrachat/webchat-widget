@@ -29,8 +29,10 @@
   let { onClose, onSend, onResolve, onReply, reply, onCancelReply }: Props = $props();
 </script>
 
+<!-- bag.7 #11 — responsive sizing so the panel never overflows small/mobile
+     viewports (clamped to the viewport minus the 1rem offset on each side). -->
 <div class="chat-window bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden flex flex-col"
-     style="width: 380px; height: 600px;">
+     style="width: min(380px, calc(100vw - 2rem)); height: min(600px, calc(100dvh - 2rem));">
   <ChatHeader 
     title={$config.widgetTitle || "Chat with us"}
     subtitle={$config.widgetSubtitle || "We typically reply within minutes"}

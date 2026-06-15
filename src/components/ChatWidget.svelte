@@ -5,7 +5,7 @@
   import ContactForm from "./ContactForm.svelte";
   import { createWebchatClient } from "../lib/orpc-client";
   import { SubscriptionManager } from "../lib/subscription";
-  import { getStoredSession, storeSession, clearSession, generateSessionId, getStoredContactInfo, storeContactInfo } from "../lib/session";
+  import { getStoredSession, storeSession, clearSession, generateSessionId, getStoredContactInfo, storeContactInfo, clearContactInfo } from "../lib/session";
   import { messages, config, connection, unreadCount } from "../stores/messages";
   import type { WidgetProps, WebchatEvent, Message, ContactInfo, ReplyPreview } from "../types";
 
@@ -86,6 +86,13 @@
       console.error("[WebChat] Failed to connect:", error);
       connection.setError("Failed to connect");
     }
+  }
+
+  // bag.7 #4 — re-attempt the connect handshake from the error state's Retry
+  // button. Clears the error first so the panel shows a connecting state.
+  async function retryConnect() {
+    connection.setConnecting();
+    await connectToWebchat(contactInfo);
   }
 
   function handleEvent(event: WebchatEvent) {
@@ -248,6 +255,10 @@
     messages.clear();
     unreadCount.reset();
     clearSession(providerId);
+    // bag.7 #19 — tie stored contact info to the session lifetime so a new
+    // visitor on a shared device isn't silently identified as the previous one.
+    clearContactInfo(providerId);
+    contactInfo = undefined;
     sessionId = "";
     isOpen = false;
     isConnected = false;
@@ -259,6 +270,12 @@
     isOpen = !isOpen;
     if (isOpen) {
       unreadCount.reset();
+      // bag.7 #13 — if we're open but have no live connection (the gated
+      // contact form was dismissed, or the initial connect failed), re-run the
+      // connect/restore flow so the visitor can resume instead of being stuck.
+      if (!isConnected && !subscriptionManager) {
+        void connectToWebchat(contactInfo);
+      }
     }
   }
 </script>
@@ -270,12 +287,12 @@
     blindly populate inputs will set this; server rejects non-empty.
   -->
   <label class="mitrachat-honeypot" aria-hidden="true">
-    Do not fill this field
     <input
       type="text"
       name="did"
       tabindex={-1}
       autocomplete="off"
+      aria-hidden="true"
       bind:value={honeypot}
     />
   </label>
@@ -299,6 +316,18 @@
         } : null}
         onCancelReply={() => (replyTarget = null)}
       />
+    {:else if $connection.error}
+      <!-- bag.7 #4 — explicit error + retry instead of a blank dead-end panel. -->
+      <div class="mitrachat-connect-error" role="alert">
+        <p>Gagal terhubung ke layanan chat.</p>
+        <button
+          type="button"
+          class="mitrachat-retry-btn"
+          onclick={retryConnect}
+        >
+          Coba lagi
+        </button>
+      </div>
     {/if}
   {:else}
     <ChatLauncher onClick={handleToggle} unreadCount={$unreadCount} />
@@ -319,6 +348,29 @@
   .mitrachat-widget[data-position="bottom-left"] {
     bottom: 1rem;
     left: 1rem;
+  }
+
+  .mitrachat-connect-error {
+    width: min(320px, calc(100vw - 2rem));
+    padding: 1rem;
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.75rem;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    font-size: 0.875rem;
+    color: #374151;
+    text-align: center;
+  }
+
+  .mitrachat-retry-btn {
+    margin-top: 0.5rem;
+    padding: 0.375rem 0.75rem;
+    border: none;
+    border-radius: 0.5rem;
+    background: var(--widget-color, #6366f1);
+    color: #fff;
+    font-size: 0.8125rem;
+    cursor: pointer;
   }
 
   .mitrachat-honeypot {

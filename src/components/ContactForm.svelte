@@ -71,8 +71,9 @@
   }
 </script>
 
+<!-- bag.7 #11 — responsive sizing (see ChatWindow.svelte). -->
 <div class="chat-window bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden flex flex-col"
-     style="width: 380px; height: 600px;">
+     style="width: min(380px, calc(100vw - 2rem)); height: min(600px, calc(100dvh - 2rem));">
   
   <!-- Header -->
   <header class="text-white px-4 py-3 flex items-center gap-3 shrink-0"
