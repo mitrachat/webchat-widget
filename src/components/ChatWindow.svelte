@@ -3,6 +3,7 @@
   import ChatMessages from "./ChatMessages.svelte";
   import ChatInput from "./ChatInput.svelte";
   import { config, connection } from "../stores/messages";
+  import { onMount } from "svelte";
 
   interface Props {
     onClose: () => void;
@@ -18,6 +19,7 @@
     }) => void;
     onResolve: () => void;
     onReply: (message: import("../types").Message) => void;
+    onRetry?: (message: import("../types").Message) => void;
     reply: {
       senderLabel: string;
       content?: string;
@@ -26,13 +28,34 @@
     onCancelReply: () => void;
   }
 
-  let { onClose, onSend, onResolve, onReply, reply, onCancelReply }: Props = $props();
+  let { onClose, onSend, onResolve, onReply, onRetry, reply, onCancelReply }: Props = $props();
+
+  let dialogEl = $state<HTMLDivElement | null>(null);
+
+  onMount(() => {
+    // bag.7 #12 — move focus into the panel when it opens.
+    dialogEl?.focus();
+  });
+
+  function handleKeydown(event: KeyboardEvent) {
+    // bag.7 #12 — Escape closes the dialog.
+    if (event.key === "Escape") {
+      onClose();
+    }
+  }
 </script>
+
+<svelte:window onkeydown={handleKeydown} />
 
 <!-- bag.7 #11 — responsive sizing so the panel never overflows small/mobile
      viewports (clamped to the viewport minus the 1rem offset on each side). -->
-<div class="chat-window bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden flex flex-col"
-     style="width: min(380px, calc(100vw - 2rem)); height: min(600px, calc(100dvh - 2rem));">
+<div bind:this={dialogEl}
+     class="chat-window bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden flex flex-col"
+     style="width: min(380px, calc(100vw - 2rem)); height: min(600px, calc(100dvh - 2rem));"
+     role="dialog"
+     aria-modal="true"
+     aria-label={$config.widgetTitle || "Chat"}
+     tabindex="-1">
   <ChatHeader 
     title={$config.widgetTitle || "Chat with us"}
     subtitle={$config.widgetSubtitle || "We typically reply within minutes"}
@@ -42,7 +65,7 @@
   />
 
   <div class="flex-1 flex flex-col min-h-0">
-    <ChatMessages {onReply} />
+    <ChatMessages {onReply} {onRetry} />
     
     {#if $connection.error}
       <div class="px-4 py-2 bg-red-50 text-red-600 text-sm text-center">

@@ -7,9 +7,10 @@
 
   interface Props {
     onReply?: (message: Message) => void;
+    onRetry?: (message: Message) => void;
   }
 
-  let { onReply }: Props = $props();
+  let { onReply, onRetry }: Props = $props();
 
   let messagesContainer: HTMLDivElement;
 
@@ -28,9 +29,13 @@
   });
 </script>
 
-<div 
+<!-- bag.7 #12 — announce incoming messages to screen readers. -->
+<div
   bind:this={messagesContainer}
   class="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50"
+  role="log"
+  aria-live="polite"
+  aria-relevant="additions"
 >
   {#if $messages.length === 0}
     <div class="text-center text-gray-400 py-8">
@@ -45,7 +50,7 @@
       {#if message.id === "typing"}
         <TypingIndicator />
       {:else}
-        <ChatBubble {message} {onReply} />
+        <ChatBubble {message} {onReply} {onRetry} />
       {/if}
     {/each}
   {/if}

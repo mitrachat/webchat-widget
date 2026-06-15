@@ -238,6 +238,32 @@
     replyTarget = null;
   }
 
+  // bag.7 #5 — resend a failed message with the SAME clientMessageId; the
+  // server enqueue is idempotent on webchat:<sessionId>:<clientMessageId>.
+  async function handleRetry(message: Message) {
+    if (!sessionId) return;
+    messages.updateStatus(message.id, "pending");
+    try {
+      await client.sendMessage({
+        sessionId,
+        providerId,
+        content: message.content || undefined,
+        clientMessageId: message.id,
+        replyPreview: message.reply,
+        attachments: message.attachments?.map((attachment) => ({
+          type: attachment.type,
+          name: attachment.name,
+          mimeType: "application/octet-stream",
+          size: attachment.size ?? 0,
+          dataUrl: attachment.url,
+        })),
+      });
+    } catch (error) {
+      console.error("[WebChat] Failed to resend message:", error);
+      messages.updateStatus(message.id, "failed");
+    }
+  }
+
   async function handleResolve() {
     if (!sessionId) return;
 
@@ -309,6 +335,7 @@
         onSend={handleSend}
         onResolve={handleResolve}
         onReply={(message) => (replyTarget = message)}
+        onRetry={handleRetry}
         reply={replyTarget ? {
           senderLabel: buildReplyPreview(replyTarget).senderLabel,
           content: buildReplyPreview(replyTarget).content,

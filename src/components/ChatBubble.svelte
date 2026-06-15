@@ -6,9 +6,10 @@
   interface Props {
     message: Message;
     onReply?: (message: Message) => void;
+    onRetry?: (message: Message) => void;
   }
 
-  let { message, onReply }: Props = $props();
+  let { message, onReply, onRetry }: Props = $props();
 
   function formatTime(timestamp: string): string {
     const date = new Date(timestamp);
@@ -120,10 +121,27 @@
 
     <span class="text-xs opacity-70 mt-1 block {message.sender === 'user' ? 'text-right' : ''}">
       {formatTime(message.timestamp)}
-      {#if message.sender === 'user' && message.status}
+      {#if message.sender === 'user' && message.status && message.status !== 'failed'}
         · {message.status}
       {/if}
     </span>
+
+    <!-- bag.7 #5 — failed sends are visually distinct (red) with tap-to-retry
+         that re-sends with the same clientMessageId (idempotent server-side). -->
+    {#if message.sender === 'user' && message.status === 'failed'}
+      <div class="mt-1 flex items-center gap-2 {message.sender === 'user' ? 'justify-end' : ''}">
+        <span class="text-xs font-medium text-red-600">⚠ Gagal terkirim</span>
+        {#if onRetry}
+          <button
+            type="button"
+            class="text-xs font-medium text-red-600 underline"
+            onclick={() => onRetry?.(message)}
+          >
+            Coba lagi
+          </button>
+        {/if}
+      </div>
+    {/if}
   </div>
 </div>
 
