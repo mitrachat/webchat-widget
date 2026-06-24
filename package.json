@@ -27,7 +27,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@orpc/client": "^1.13.1",
+    "@orpc/client": "^1.14.3",
     "dompurify": "^3.4.6",
     "marked": "^17.0.5"
   },
